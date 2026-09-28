@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "402121786712",
+    "project_id": "propersona-prod-huzentra",
+    "storage_bucket": "propersona-prod-huzentra.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:402121786712:android:6d4534c763d97bbe0ed12d",
+        "android_client_info": {
+          "package_name": "com.huzentra.pro_persona"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwjAaJwpszqDD-SYc-LsGiLYAubxoMF6o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

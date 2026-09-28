@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "dev": "propersona-dev-huzentra",
+    "prod": "propersona-prod-huzentra",
+    "default": "propersona-dev-huzentra"
+  },
+  "targets": {},
+  "etags": {}
+}

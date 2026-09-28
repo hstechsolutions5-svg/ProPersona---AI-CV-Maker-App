@@ -1,0 +1,63 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "propersona-prod-huzentra",
+          "appId": "1:402121786712:android:6d4534c763d97bbe0ed12d",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "propersona-prod-huzentra",
+          "configurations": {
+            "android": "1:402121786712:android:6d4534c763d97bbe0ed12d",
+            "ios": "1:402121786712:ios:94e85623243c6d9d0ed12d",
+            "macos": "1:402121786712:ios:94e85623243c6d9d0ed12d",
+            "web": "1:402121786712:web:0d5a6ac8618623db0ed12d",
+            "windows": "1:402121786712:web:cb350083716f92750ed12d"
+          }
+        },
+        "lib/firebase_options_dev.dart": {
+          "projectId": "propersona-dev-huzentra",
+          "configurations": {
+            "android": "1:391111389156:android:0b2960b43738a24d5021f1",
+            "ios": "1:391111389156:ios:2e43cc7ab74165815021f1",
+            "macos": "1:391111389156:ios:2e43cc7ab74165815021f1",
+            "web": "1:391111389156:web:8dc9d020359cc0ff5021f1",
+            "windows": "1:391111389156:web:a58a8464c46aea6a5021f1"
+          }
+        },
+        "lib/firebase_options_prod.dart": {
+          "projectId": "propersona-prod-huzentra",
+          "configurations": {
+            "android": "1:402121786712:android:6d4534c763d97bbe0ed12d",
+            "ios": "1:402121786712:ios:94e85623243c6d9d0ed12d",
+            "macos": "1:402121786712:ios:94e85623243c6d9d0ed12d",
+            "web": "1:402121786712:web:0d5a6ac8618623db0ed12d"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "functions": {
+      "port": 5001
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "ui": {
+      "enabled": true
+    },
+    "singleProjectMode": true
+  }
+}
