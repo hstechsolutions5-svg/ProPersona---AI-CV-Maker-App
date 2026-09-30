@@ -1,8 +1,14 @@
 import 'package:get/get.dart';
+import 'package:pro_persona/features/authentication/views/forget_password_view.dart';
+import 'package:pro_persona/features/authentication/views/signup_view.dart';
+import 'package:pro_persona/features/legal/widgets/privacy_policy_view.dart';
+import 'package:pro_persona/features/legal/widgets/terms_and_conditions_view.dart';
 import '../../core/widgets/route_placeholder_view.dart';
+import '../../features/legal/views/legal_view.dart';
 import 'app_routes.dart';
 import 'middleware/auth_middleware.dart';
 import 'middleware/onboarding_middleware.dart';
+import '../../features/authentication/views/login_view.dart';
 
 abstract final class AppPages {
   static const String initial = AppRoutes.splash;
@@ -29,19 +35,13 @@ abstract final class AppPages {
     // ─────────────────────────────────────
     // Authentication
     // ─────────────────────────────────────
-    GetPage(
-      name: AppRoutes.login,
-      page: () => const RoutePlaceholderView(title: 'Login'),
-    ),
+    GetPage(name: AppRoutes.login, page: () => const LoginView()),
 
-    GetPage(
-      name: AppRoutes.signup,
-      page: () => const RoutePlaceholderView(title: 'Create Account'),
-    ),
+    GetPage(name: AppRoutes.signup, page: () => const SignupView()),
 
     GetPage(
       name: AppRoutes.forgotPassword,
-      page: () => const RoutePlaceholderView(title: 'Forgot Password'),
+      page: () => const ForgotPasswordView(),
     ),
 
     // ─────────────────────────────────────
@@ -142,13 +142,15 @@ abstract final class AppPages {
     // ─────────────────────────────────────
     GetPage(
       name: AppRoutes.privacyPolicy,
-      page: () => const RoutePlaceholderView(title: 'Privacy Policy'),
+      page: () => const PrivacyPolicyView(),
     ),
 
     GetPage(
       name: AppRoutes.termsAndConditions,
-      page: () => const RoutePlaceholderView(title: 'Terms & Conditions'),
+      page: () => const TermsAndConditionsView(),
     ),
+
+    GetPage(name: AppRoutes.legalConsent, page: () => const LegalConsentView()),
 
     // ─────────────────────────────────────
     // Fallback

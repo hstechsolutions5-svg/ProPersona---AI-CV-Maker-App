@@ -67,6 +67,8 @@ abstract final class AppRoutes {
 
   static const String termsAndConditions = '/terms-and-conditions';
 
+  static const String legalConsent = '/legal-consent';
+
   // ─────────────────────────────────────────────
   // Error
   // ─────────────────────────────────────────────

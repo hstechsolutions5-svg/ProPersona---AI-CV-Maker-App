@@ -1,26 +1,51 @@
 {
   "project_info": {
-    "project_number": "402121786712",
-    "project_id": "propersona-prod-huzentra",
-    "storage_bucket": "propersona-prod-huzentra.firebasestorage.app"
+    "project_number": "391111389156",
+    "project_id": "propersona-dev-huzentra",
+    "storage_bucket": "propersona-dev-huzentra.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:402121786712:android:6d4534c763d97bbe0ed12d",
+        "mobilesdk_app_id": "1:391111389156:android:0b2960b43738a24d5021f1",
         "android_client_info": {
           "package_name": "com.huzentra.pro_persona"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "391111389156-dbh4oc5d8h67b2b3e0itl62c7873a07s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.huzentra.pro_persona",
+            "certificate_hash": "2152ac7012db2383e6ca03da5b72f740f384d958"
+          }
+        },
+        {
+          "client_id": "391111389156-gpcm8fb5vrth0are0690kln6j2lkt0q9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyBwjAaJwpszqDD-SYc-LsGiLYAubxoMF6o"
+          "current_key": "AIzaSyBxXqE4UZmDpJWf8Fv1YaSADTgSefBKYXo"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "391111389156-gpcm8fb5vrth0are0690kln6j2lkt0q9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "391111389156-q2vqc0sasd71msshdrvr219b940egs8q.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.huzentra.proPersona"
+              }
+            }
+          ]
         }
       }
     }
