@@ -8,6 +8,7 @@ import 'package:pro_persona/features/onboarding/bindings/onboarding_binding.dart
 import 'package:pro_persona/features/onboarding/views/path_selector_view.dart';
 import '../../core/widgets/route_placeholder_view.dart';
 import '../../features/legal/views/legal_consent_view.dart';
+import '../../shared/widgets/navigation/app_shell_placeholder_view.dart';
 import 'app_routes.dart';
 import 'middleware/auth_middleware.dart';
 import 'middleware/guest_middleware.dart';
@@ -59,7 +60,11 @@ abstract final class AppPages {
     // ─────────────────────────────────────
     GetPage(
       name: AppRoutes.dashboard,
-      page: () => const RoutePlaceholderView(title: 'Dashboard'),
+      page: () => const AppShellPlaceholderView(
+        title: 'Dashboard',
+        route: AppRoutes.dashboard,
+        description: 'Your ProPersona career workspace will appear here.',
+      ),
       middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
@@ -68,26 +73,39 @@ abstract final class AppPages {
     // ─────────────────────────────────────
     GetPage(
       name: AppRoutes.resumes,
-      page: () => const RoutePlaceholderView(title: 'My Resumes'),
-      middlewares: protectedMiddlewares,
+      page: () => const AppShellPlaceholderView(
+        title: 'My Resumes',
+        route: AppRoutes.resumes,
+        description: 'Create, manage and improve your resumes.',
+      ),
+      middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
     GetPage(
       name: AppRoutes.createResume,
-      page: () => const RoutePlaceholderView(title: 'Create Resume'),
-      middlewares: protectedMiddlewares,
+      page: () => const AppShellPlaceholderView(
+        title: 'Create Resume',
+        route: AppRoutes.createResume,
+      ),
+      middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
     GetPage(
       name: AppRoutes.editResume,
-      page: () => const RoutePlaceholderView(title: 'Edit Resume'),
-      middlewares: protectedMiddlewares,
+      page: () => const AppShellPlaceholderView(
+        title: 'Resume Builder',
+        route: AppRoutes.editResume,
+      ),
+      middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
     GetPage(
       name: AppRoutes.resumePreview,
-      page: () => const RoutePlaceholderView(title: 'Resume Preview'),
-      middlewares: protectedMiddlewares,
+      page: () => const AppShellPlaceholderView(
+        title: 'Resume Preview',
+        route: AppRoutes.resumePreview,
+      ),
+      middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
     // ─────────────────────────────────────
@@ -95,8 +113,13 @@ abstract final class AppPages {
     // ─────────────────────────────────────
     GetPage(
       name: AppRoutes.aiTools,
-      page: () => const RoutePlaceholderView(title: 'AI Tools'),
-      middlewares: protectedMiddlewares,
+      page: () => const AppShellPlaceholderView(
+        title: 'AI Tools',
+        route: AppRoutes.aiTools,
+        description:
+            'ATS analysis and AI-assisted career tools will appear here.',
+      ),
+      middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
     GetPage(
@@ -122,20 +145,29 @@ abstract final class AppPages {
     // ─────────────────────────────────────
     GetPage(
       name: AppRoutes.profile,
-      page: () => const RoutePlaceholderView(title: 'Profile'),
-      middlewares: protectedMiddlewares,
+      page: () => const AppShellPlaceholderView(
+        title: 'Profile',
+        route: AppRoutes.profile,
+      ),
+      middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
     GetPage(
       name: AppRoutes.settings,
-      page: () => const RoutePlaceholderView(title: 'Settings'),
-      middlewares: protectedMiddlewares,
+      page: () => const AppShellPlaceholderView(
+        title: 'Settings',
+        route: AppRoutes.settings,
+      ),
+      middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
     GetPage(
       name: AppRoutes.subscription,
-      page: () => const RoutePlaceholderView(title: 'Subscription'),
-      middlewares: protectedMiddlewares,
+      page: () => const AppShellPlaceholderView(
+        title: 'Subscription',
+        route: AppRoutes.subscription,
+      ),
+      middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
     // ─────────────────────────────────────
