@@ -1,7 +1,7 @@
 # ProPersona
 
 <p align="center">
-  <img src="assets/propersona-icon.png" width="128" alt="ProPersona logo">
+  <img src="assets/images/propersona-icon.png" width="128" alt="ProPersona logo">
 </p>
 
 <p align="center">
