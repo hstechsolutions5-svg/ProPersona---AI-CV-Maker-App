@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../../core/constants/legal_document_versions.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/result/result.dart';
 import '../../../core/services/logger_service.dart';
@@ -8,7 +9,6 @@ import '../../../shared/repositories/user_profile_repository.dart';
 import '../models/auth_user_model.dart';
 import '../repositories/authentication_repository.dart';
 import '../services/session_service.dart';
-import '../../../core/constants/legal_document_versions.dart';
 
 enum AuthOperation {
   none,
@@ -16,8 +16,8 @@ enum AuthOperation {
   signup,
   googleSignIn,
   passwordReset,
-  logout,
   legalConsent,
+  logout,
 }
 
 class AuthController extends GetxController {
@@ -40,10 +40,6 @@ class AuthController extends GetxController {
 
   final Rxn<AppFailure> _failure = Rxn<AppFailure>();
 
-  // ─────────────────────────────────────────────
-  // Public State
-  // ─────────────────────────────────────────────
-
   AuthOperation get operation => _operation.value;
 
   AppFailure? get failure => _failure.value;
@@ -58,18 +54,14 @@ class AuthController extends GetxController {
 
   bool get isResettingPassword => operation == AuthOperation.passwordReset;
 
+  bool get isAcceptingLegalConsent => operation == AuthOperation.legalConsent;
+
   bool get isLoggingOut => operation == AuthOperation.logout;
 
   SessionService get session => _sessionService;
 
-  bool get isAcceptingLegalConsent => operation == AuthOperation.legalConsent;
-
-  // ─────────────────────────────────────────────
-  // Login
-  // ─────────────────────────────────────────────
-
   Future<bool> login({required String email, required String password}) async {
-    if (!_beginOperation(AuthOperation.login)) {
+    if (!_begin(AuthOperation.login)) {
       return false;
     }
 
@@ -85,12 +77,7 @@ class AuthController extends GetxController {
 
       switch (result) {
         case Success<AuthUserModel>(data: final user):
-          _logger.info(
-            'User authenticated successfully.',
-            name: 'AuthController',
-          );
-
-          await _updateLastLoginBestEffort(user.uid);
+          await _updateLastLogin(user.uid);
 
           return true;
 
@@ -100,13 +87,9 @@ class AuthController extends GetxController {
           return false;
       }
     } finally {
-      _endOperation();
+      _end();
     }
   }
-
-  // ─────────────────────────────────────────────
-  // Sign Up
-  // ─────────────────────────────────────────────
 
   Future<bool> signup({
     required String fullName,
@@ -114,16 +97,27 @@ class AuthController extends GetxController {
     required String password,
     required bool legalConsentAccepted,
   }) async {
-    if (!_beginOperation(AuthOperation.signup)) {
+    if (!_begin(AuthOperation.signup)) {
       return false;
     }
 
     try {
-      if (!_validateSignup(
-        fullName: fullName,
-        email: email,
-        password: password,
-      )) {
+      if (fullName.trim().isEmpty) {
+        _validation('FULL_NAME_REQUIRED', 'Please enter your full name.');
+
+        return false;
+      }
+
+      if (!_validateCredentials(email: email, password: password)) {
+        return false;
+      }
+
+      if (!legalConsentAccepted) {
+        _validation(
+          'LEGAL_CONSENT_REQUIRED',
+          'You must accept the Terms & Conditions and Privacy Policy.',
+        );
+
         return false;
       }
 
@@ -131,16 +125,6 @@ class AuthController extends GetxController {
         email: email.trim(),
         password: password,
       );
-
-      if (!legalConsentAccepted) {
-        _setValidationFailure(
-          code: 'LEGAL_CONSENT_REQUIRED',
-          message:
-              'You must accept the Terms & Conditions and Privacy Policy to create an account.',
-        );
-
-        return false;
-      }
 
       switch (authResult) {
         case Failure<AuthUserModel>(failure: final failure):
@@ -166,37 +150,21 @@ class AuthController extends GetxController {
             case Success<UserProfileModel>(data: final createdProfile):
               _sessionService.setProfile(createdProfile);
 
-              _logger.info(
-                'User account and profile created successfully.',
-                name: 'AuthController',
-              );
-
               return true;
 
             case Failure<UserProfileModel>(failure: final failure):
               _setFailure(failure);
 
-              _logger.error(
-                'Authentication account was created but profile creation failed.',
-                error: failure.cause,
-                stackTrace: failure.stackTrace,
-                name: 'AuthController',
-              );
-
               return false;
           }
       }
     } finally {
-      _endOperation();
+      _end();
     }
   }
 
-  // ─────────────────────────────────────────────
-  // Google Sign-In
-  // ─────────────────────────────────────────────
-
   Future<bool> signInWithGoogle({bool legalConsentAccepted = false}) async {
-    if (!_beginOperation(AuthOperation.googleSignIn)) {
+    if (!_begin(AuthOperation.googleSignIn)) {
       return false;
     }
 
@@ -210,13 +178,13 @@ class AuthController extends GetxController {
           return false;
 
         case Success<AuthUserModel>(data: final authUser):
-          return await _resolveGoogleProfile(
+          return _resolveGoogleProfile(
             authUser,
-            legalConsentAccepted: true,
+            legalConsentAccepted: legalConsentAccepted,
           );
       }
     } finally {
-      _endOperation();
+      _end();
     }
   }
 
@@ -224,20 +192,19 @@ class AuthController extends GetxController {
     AuthUserModel authUser, {
     required bool legalConsentAccepted,
   }) async {
-    final profileResult = await _userProfileRepository.getProfile(
-      uid: authUser.uid,
-    );
+    final result = await _userProfileRepository.getProfile(uid: authUser.uid);
 
-    switch (profileResult) {
+    switch (result) {
       case Failure<UserProfileModel?>(failure: final failure):
         _setFailure(failure);
+
         return false;
 
-      case Success<UserProfileModel?>(data: final existingProfile):
-        if (existingProfile != null) {
-          _sessionService.setProfile(existingProfile);
+      case Success<UserProfileModel?>(data: final profile):
+        if (profile != null) {
+          _sessionService.setProfile(profile);
 
-          await _updateLastLoginBestEffort(authUser.uid);
+          await _updateLastLogin(authUser.uid);
 
           return true;
         }
@@ -245,53 +212,73 @@ class AuthController extends GetxController {
         if (!legalConsentAccepted) {
           await _authRepository.logout();
 
-          _setValidationFailure(
-            code: 'LEGAL_CONSENT_REQUIRED',
-            message:
-                'No ProPersona profile exists for this Google account. Please create an account and accept the Terms & Privacy Policy first.',
+          _validation(
+            'LEGAL_CONSENT_REQUIRED',
+            'No ProPersona profile exists for this Google account. Please create an account first.',
           );
 
           return false;
         }
 
-        return _createGoogleProfile(authUser);
+        final fullName = _googleDisplayName(authUser);
+
+        final newProfile = UserProfileModel.newUser(
+          uid: authUser.uid,
+          fullName: fullName,
+          email: authUser.email,
+          photoUrl: authUser.photoUrl,
+          acceptedTermsVersion: LegalDocumentVersions.terms,
+          acceptedPrivacyVersion: LegalDocumentVersions.privacy,
+        );
+
+        final createResult = await _userProfileRepository.createProfile(
+          profile: newProfile,
+        );
+
+        switch (createResult) {
+          case Success<UserProfileModel>(data: final createdProfile):
+            _sessionService.setProfile(createdProfile);
+
+            return true;
+
+          case Failure<UserProfileModel>(failure: final failure):
+            _setFailure(failure);
+
+            return false;
+        }
     }
   }
 
-  Future<bool> _createGoogleProfile(AuthUserModel authUser) async {
-    final fullName = _resolveGoogleDisplayName(authUser);
+  Future<bool> resetPassword({required String email}) async {
+    if (!_begin(AuthOperation.passwordReset)) {
+      return false;
+    }
 
-    final profile = UserProfileModel.newUser(
-      uid: authUser.uid,
-      fullName: fullName,
-      email: authUser.email,
-      photoUrl: authUser.photoUrl,
-      acceptedTermsVersion: LegalDocumentVersions.terms,
-      acceptedPrivacyVersion: LegalDocumentVersions.privacy,
-    );
-
-    final result = await _userProfileRepository.createProfile(profile: profile);
-
-    switch (result) {
-      case Success<UserProfileModel>(data: final createdProfile):
-        _sessionService.setProfile(createdProfile);
-
-        _logger.info(
-          'New Google user profile created.',
-          name: 'AuthController',
-        );
-
-        return true;
-
-      case Failure<UserProfileModel>(failure: final failure):
-        _setFailure(failure);
+    try {
+      if (email.trim().isEmpty) {
+        _validation('EMAIL_REQUIRED', 'Please enter your email address.');
 
         return false;
+      }
+
+      final result = await _authRepository.resetPassword(email: email.trim());
+
+      switch (result) {
+        case Success<void>():
+          return true;
+
+        case Failure<void>(failure: final failure):
+          _setFailure(failure);
+
+          return false;
+      }
+    } finally {
+      _end();
     }
   }
 
   Future<bool> acceptCurrentLegalDocuments() async {
-    if (!_beginOperation(AuthOperation.legalConsent)) {
+    if (!_begin(AuthOperation.legalConsent)) {
       return false;
     }
 
@@ -299,10 +286,7 @@ class AuthController extends GetxController {
       final uid = _sessionService.uid;
 
       if (uid == null) {
-        _setValidationFailure(
-          code: 'AUTHENTICATION_REQUIRED',
-          message: 'You must be signed in to continue.',
-        );
+        _validation('AUTH_REQUIRED', 'You must be signed in.');
 
         return false;
       }
@@ -325,56 +309,12 @@ class AuthController extends GetxController {
           return false;
       }
     } finally {
-      _endOperation();
+      _end();
     }
   }
-
-  // ─────────────────────────────────────────────
-  // Password Reset
-  // ─────────────────────────────────────────────
-
-  Future<bool> resetPassword({required String email}) async {
-    if (!_beginOperation(AuthOperation.passwordReset)) {
-      return false;
-    }
-
-    try {
-      if (email.trim().isEmpty) {
-        _setValidationFailure(
-          code: 'EMAIL_REQUIRED',
-          message: 'Please enter your email address.',
-        );
-
-        return false;
-      }
-
-      final result = await _authRepository.resetPassword(email: email.trim());
-
-      switch (result) {
-        case Success<void>():
-          _logger.info(
-            'Password reset request submitted.',
-            name: 'AuthController',
-          );
-
-          return true;
-
-        case Failure<void>(failure: final failure):
-          _setFailure(failure);
-
-          return false;
-      }
-    } finally {
-      _endOperation();
-    }
-  }
-
-  // ─────────────────────────────────────────────
-  // Logout
-  // ─────────────────────────────────────────────
 
   Future<bool> logout() async {
-    if (!_beginOperation(AuthOperation.logout)) {
+    if (!_begin(AuthOperation.logout)) {
       return false;
     }
 
@@ -383,8 +323,6 @@ class AuthController extends GetxController {
 
       switch (result) {
         case Success<void>():
-          _logger.info('User signed out.', name: 'AuthController');
-
           return true;
 
         case Failure<void>(failure: final failure):
@@ -393,43 +331,15 @@ class AuthController extends GetxController {
           return false;
       }
     } finally {
-      _endOperation();
+      _end();
     }
   }
-
-  // ─────────────────────────────────────────────
-  // Failure State
-  // ─────────────────────────────────────────────
 
   void clearFailure() {
     _failure.value = null;
   }
 
-  void _setFailure(AppFailure failure) {
-    _failure.value = failure;
-
-    _logger.warning(
-      'Authentication operation failed: '
-      '${failure.code}',
-      error: failure.cause,
-      stackTrace: failure.stackTrace,
-      name: 'AuthController',
-    );
-  }
-
-  void _setValidationFailure({required String code, required String message}) {
-    _failure.value = AppFailure(
-      code: code,
-      message: message,
-      type: FailureType.validation,
-    );
-  }
-
-  // ─────────────────────────────────────────────
-  // Operation State
-  // ─────────────────────────────────────────────
-
-  bool _beginOperation(AuthOperation operation) {
+  bool _begin(AuthOperation operation) {
     if (isLoading) {
       return false;
     }
@@ -440,29 +350,19 @@ class AuthController extends GetxController {
     return true;
   }
 
-  void _endOperation() {
+  void _end() {
     _operation.value = AuthOperation.none;
   }
 
-  // ─────────────────────────────────────────────
-  // Validation
-  // ─────────────────────────────────────────────
-
   bool _validateCredentials({required String email, required String password}) {
     if (email.trim().isEmpty) {
-      _setValidationFailure(
-        code: 'EMAIL_REQUIRED',
-        message: 'Please enter your email address.',
-      );
+      _validation('EMAIL_REQUIRED', 'Please enter your email address.');
 
       return false;
     }
 
     if (password.isEmpty) {
-      _setValidationFailure(
-        code: 'PASSWORD_REQUIRED',
-        message: 'Please enter your password.',
-      );
+      _validation('PASSWORD_REQUIRED', 'Please enter your password.');
 
       return false;
     }
@@ -470,33 +370,31 @@ class AuthController extends GetxController {
     return true;
   }
 
-  bool _validateSignup({
-    required String fullName,
-    required String email,
-    required String password,
-  }) {
-    if (fullName.trim().isEmpty) {
-      _setValidationFailure(
-        code: 'FULL_NAME_REQUIRED',
-        message: 'Please enter your full name.',
-      );
-
-      return false;
-    }
-
-    return _validateCredentials(email: email, password: password);
+  void _validation(String code, String message) {
+    _failure.value = AppFailure(
+      code: code,
+      message: message,
+      type: FailureType.validation,
+    );
   }
 
-  // ─────────────────────────────────────────────
-  // Profile Helpers
-  // ─────────────────────────────────────────────
+  void _setFailure(AppFailure failure) {
+    _failure.value = failure;
 
-  Future<void> _updateLastLoginBestEffort(String uid) async {
+    _logger.warning(
+      'Authentication operation failed: ${failure.code}',
+      error: failure.cause,
+      stackTrace: failure.stackTrace,
+      name: 'AuthController',
+    );
+  }
+
+  Future<void> _updateLastLogin(String uid) async {
     final result = await _userProfileRepository.updateLastLogin(uid: uid);
 
     if (result case Failure<void>(failure: final failure)) {
       _logger.warning(
-        'Unable to update last login timestamp.',
+        'Unable to update last login.',
         error: failure.cause,
         stackTrace: failure.stackTrace,
         name: 'AuthController',
@@ -504,7 +402,7 @@ class AuthController extends GetxController {
     }
   }
 
-  String _resolveGoogleDisplayName(AuthUserModel user) {
+  String _googleDisplayName(AuthUserModel user) {
     final displayName = user.displayName?.trim();
 
     if (displayName != null && displayName.isNotEmpty) {
@@ -514,10 +412,10 @@ class AuthController extends GetxController {
     final email = user.email.trim();
 
     if (email.contains('@')) {
-      final localPart = email.split('@').first;
+      final local = email.split('@').first;
 
-      if (localPart.isNotEmpty) {
-        return localPart;
+      if (local.isNotEmpty) {
+        return local;
       }
     }
 

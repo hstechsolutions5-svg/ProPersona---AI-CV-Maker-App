@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import '../../../features/authentication/services/session_service.dart';
 import '../app_routes.dart';
 
-class AuthMiddleware extends GetMiddleware {
+class GuestMiddleware extends GetMiddleware {
   @override
   int? get priority => -30;
 
@@ -16,22 +16,16 @@ class AuthMiddleware extends GetMiddleware {
 
     final session = Get.find<SessionService>();
 
-    if (session.isInitializing) {
-      return const RouteSettings(name: AppRoutes.splash);
-    }
-
-    if (session.hasError) {
+    if (session.isInitializing || session.hasError) {
       return const RouteSettings(name: AppRoutes.splash);
     }
 
     if (session.isUnauthenticated) {
-      return const RouteSettings(name: AppRoutes.login);
+      return null;
     }
 
-    if (!session.hasProfile) {
-      return const RouteSettings(name: AppRoutes.splash);
-    }
-
-    return null;
+    // Authenticated users should go back
+    // through the centralized resolver.
+    return const RouteSettings(name: AppRoutes.splash);
   }
 }

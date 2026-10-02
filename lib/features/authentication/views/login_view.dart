@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../app/routes/app_routes.dart';
-import '../../../core/errors/app_failure.dart';
 import '../../../core/responsive/device_type.dart';
 import '../../../core/responsive/responsive_builder.dart';
 import '../../../core/theme/app_colors.dart';
@@ -76,13 +75,7 @@ class _LoginViewState extends State<LoginView> {
       return;
     }
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('Signed in successfully.')));
-
-    // Automatic destination selection will
-    // be implemented in Phase 1.14 using
-    // SessionService + middleware.
+    Get.offAllNamed(AppRoutes.splash);
   }
 
   Future<void> _googleSignIn() async {
@@ -98,31 +91,13 @@ class _LoginViewState extends State<LoginView> {
       return;
     }
 
-    if (!success) {
-      final failure = _authController.failure;
-
-      if (failure?.type == FailureType.cancelled) {
-        return;
-      }
-
-      final message =
-          failure?.message ?? 'Google Sign-In could not be completed.';
-
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(message)));
+    if (success) {
+      Get.offAllNamed(AppRoutes.splash);
 
       return;
     }
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('Signed in with Google successfully.')),
-      );
-
-    // Destination routing is intentionally
-    // handled later in Phase 1.14.
+    Get.offAllNamed(AppRoutes.splash);
   }
 
   void _togglePasswordVisibility() {
@@ -299,27 +274,12 @@ class _LoginViewState extends State<LoginView> {
 
             SizedBox(height: AppSpacing.xm),
 
-            Obx(() {
-              final isLoading = _authController.isLoggingIn;
-
-              return FilledButton(
-                onPressed: _authController.isLoading ? null : _login,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 180),
-                  child: isLoading
-                      ? const SizedBox(
-                          key: ValueKey('loading'),
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text('Sign In', key: ValueKey('text')),
-                ),
-              );
-            }),
+            Obx(
+              () => GoogleSignInButton(
+                isLoading: _authController.isGoogleSigningIn,
+                onPressed: _googleSignIn,
+              ),
+            ),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -327,17 +287,20 @@ class _LoginViewState extends State<LoginView> {
 
             const SizedBox(height: AppSpacing.xxl),
 
-            // Google Sign-In will be wired
-            // during Phase 1.11.
-            Obx(
-              () => GoogleSignInButton(
-                isLoading: _authController.isGoogleSigningIn,
-                enabled:
-                    !_authController.isLoading ||
-                    _authController.isGoogleSigningIn,
-                onPressed: _googleSignIn,
-              ),
-            ),
+            Obx(() {
+              final loading = _authController.isLoggingIn;
+
+              return FilledButton(
+                onPressed: _authController.isLoading ? null : _login,
+                child: loading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Sign In'),
+              );
+            }),
 
             const SizedBox(height: AppSpacing.xxl),
 

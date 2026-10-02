@@ -90,35 +90,25 @@ class _SignupViewState extends State<SignupView> {
       return;
     }
 
-    if (!success) {
-      final message =
-          _authController.failure?.message ??
-          'Your account could not be created.';
-
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(message)));
+    if (success) {
+      Get.offAllNamed(AppRoutes.splash);
 
       return;
     }
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('Your ProPersona account has been created.'),
-        ),
-      );
-
-    // Phase 1.14 will automatically route
-    // newly registered users to Path Selector
-    // based on SessionService state.
+    Get.offAllNamed(AppRoutes.splash);
   }
 
   Future<void> _googleSignIn() async {
     FocusScope.of(context).unfocus();
 
     _authController.clearFailure();
+
+    final legalValid = _legalConsentKey.currentState?.validate() ?? false;
+
+    if (!legalValid) {
+      return;
+    }
 
     final success = await _authController.signInWithGoogle(
       legalConsentAccepted: _legalConsentAccepted,
@@ -145,23 +135,7 @@ class _SignupViewState extends State<SignupView> {
       return;
     }
 
-    final legalValid = _legalConsentKey.currentState?.validate() ?? false;
-
-    if (!legalValid) {
-      return;
-    }
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('Google authentication completed successfully.'),
-        ),
-      );
-
-    // Session state determines whether this
-    // user needs onboarding. Routing comes
-    // in Phase 1.14.
+    Get.offAllNamed(AppRoutes.splash);
   }
 
   @override
@@ -398,64 +372,53 @@ class _SignupViewState extends State<SignupView> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Checkbox(
-                          value: _legalConsentAccepted,
-                          onChanged: (value) {
-                            final accepted = value ?? false;
+                    CheckboxListTile(
+                      value: _legalConsentAccepted,
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      onChanged: (value) {
+                        final accepted = value ?? false;
 
-                            setState(() {
-                              _legalConsentAccepted = accepted;
-                            });
+                        setState(() {
+                          _legalConsentAccepted = accepted;
+                        });
 
-                            field.didChange(accepted);
-                          },
-                        ),
+                        field.didChange(accepted);
+                      },
+                      title: Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          const Text('I agree to the '),
 
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Wrap(
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                const Text('I agree to the '),
-
-                                TextButton(
-                                  style: TextButton.styleFrom(
-                                    padding: EdgeInsets.zero,
-                                    minimumSize: Size.zero,
-                                    tapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                  ),
-                                  onPressed: () {
-                                    Get.toNamed(AppRoutes.termsAndConditions);
-                                  },
-                                  child: const Text('Terms & Conditions'),
-                                ),
-
-                                const Text(' and '),
-
-                                TextButton(
-                                  style: TextButton.styleFrom(
-                                    padding: EdgeInsets.zero,
-                                    minimumSize: Size.zero,
-                                    tapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                  ),
-                                  onPressed: () {
-                                    Get.toNamed(AppRoutes.privacyPolicy);
-                                  },
-                                  child: const Text('Privacy Policy'),
-                                ),
-
-                                const Text('.'),
-                              ],
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
+                            onPressed: () {
+                              Get.toNamed(AppRoutes.termsAndConditions);
+                            },
+                            child: const Text('Terms & Conditions'),
                           ),
-                        ),
-                      ],
+
+                          const Text(' and '),
+
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () {
+                              Get.toNamed(AppRoutes.privacyPolicy);
+                            },
+                            child: const Text('Privacy Policy'),
+                          ),
+
+                          const Text('.'),
+                        ],
+                      ),
                     ),
 
                     if (field.hasError)
@@ -463,10 +426,9 @@ class _SignupViewState extends State<SignupView> {
                         padding: const EdgeInsets.only(left: 12),
                         child: Text(
                           field.errorText!,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.error,
-                              ),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
                         ),
                       ),
                   ],
@@ -479,23 +441,13 @@ class _SignupViewState extends State<SignupView> {
 
               return FilledButton(
                 onPressed: _authController.isLoading ? null : _signup,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 180),
-                  child: loading
-                      ? const SizedBox(
-                          key: ValueKey('signup-loading'),
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'Create Account',
-                          key: ValueKey('signup-text'),
-                        ),
-                ),
+                child: loading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Create Account'),
               );
             }),
 
@@ -505,13 +457,9 @@ class _SignupViewState extends State<SignupView> {
 
             const SizedBox(height: AppSpacing.xxl),
 
-            // Google activation comes in 1.11.
             Obx(
               () => GoogleSignInButton(
                 isLoading: _authController.isGoogleSigningIn,
-                enabled:
-                    !_authController.isLoading ||
-                    _authController.isGoogleSigningIn,
                 onPressed: _googleSignIn,
               ),
             ),

@@ -21,12 +21,11 @@ class LegalDocumentView extends StatelessWidget {
   final String title;
   final String version;
   final String effectiveDate;
+
   final List<LegalSection> sections;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: SelectionArea(
@@ -38,24 +37,17 @@ class LegalDocumentView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: theme.textTheme.headlineLarge),
-
+                  Text(title, style: Theme.of(context).textTheme.headlineLarge),
                   const SizedBox(height: AppSpacing.xm),
-
-                  Text(
-                    'Version $version • Effective $effectiveDate',
-                    style: theme.textTheme.bodySmall,
-                  ),
-
+                  Text('Version $version • Effective $effectiveDate'),
                   const SizedBox(height: AppSpacing.xxxl),
-
                   for (final section in sections) ...[
-                    Text(section.title, style: theme.textTheme.titleLarge),
-
+                    Text(
+                      section.title,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
                     const SizedBox(height: AppSpacing.xm),
-
-                    Text(section.body, style: theme.textTheme.bodyMedium),
-
+                    Text(section.body),
                     const SizedBox(height: AppSpacing.xxl),
                   ],
                 ],

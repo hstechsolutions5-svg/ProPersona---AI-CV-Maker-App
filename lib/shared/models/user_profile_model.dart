@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../core/constants/legal_document_versions.dart';
 import 'career_stage.dart';
 import 'subscription_model.dart';
@@ -13,12 +14,12 @@ class UserProfileModel {
     required this.createdAt,
     required this.updatedAt,
     required this.lastLoginAt,
+    this.photoUrl,
+    this.careerStage,
     this.acceptedTermsVersion,
     this.acceptedPrivacyVersion,
     this.termsAcceptedAt,
     this.privacyAcceptedAt,
-    this.photoUrl,
-    this.careerStage,
   });
 
   final String uid;
@@ -43,17 +44,13 @@ class UserProfileModel {
   final DateTime updatedAt;
   final DateTime lastLoginAt;
 
-  // ─────────────────────────────────────────────
-  // Factory — New User
-  // ─────────────────────────────────────────────
-
   factory UserProfileModel.newUser({
     required String uid,
     required String fullName,
     required String email,
-    String? photoUrl,
     required String acceptedTermsVersion,
     required String acceptedPrivacyVersion,
+    String? photoUrl,
   }) {
     final now = DateTime.now().toUtc();
 
@@ -65,19 +62,15 @@ class UserProfileModel {
       careerStage: null,
       subscriptionPlan: SubscriptionPlan.free,
       onboardingCompleted: false,
-      createdAt: now,
-      updatedAt: now,
-      lastLoginAt: now,
       acceptedTermsVersion: acceptedTermsVersion,
       acceptedPrivacyVersion: acceptedPrivacyVersion,
       termsAcceptedAt: now,
       privacyAcceptedAt: now,
+      createdAt: now,
+      updatedAt: now,
+      lastLoginAt: now,
     );
   }
-
-  // ─────────────────────────────────────────────
-  // Firestore
-  // ─────────────────────────────────────────────
 
   factory UserProfileModel.fromMap(Map<String, dynamic> map) {
     return UserProfileModel(
@@ -90,19 +83,12 @@ class UserProfileModel {
         map['subscriptionPlan'] as String?,
       ),
       onboardingCompleted: map['onboardingCompleted'] as bool? ?? false,
-
       acceptedTermsVersion: map['acceptedTermsVersion'] as String?,
-
       acceptedPrivacyVersion: map['acceptedPrivacyVersion'] as String?,
-
       termsAcceptedAt: _nullableDateFromFirestore(map['termsAcceptedAt']),
-
       privacyAcceptedAt: _nullableDateFromFirestore(map['privacyAcceptedAt']),
-
       createdAt: _dateFromFirestore(map['createdAt']),
-
       updatedAt: _dateFromFirestore(map['updatedAt']),
-
       lastLoginAt: _dateFromFirestore(map['lastLoginAt']),
     );
   }
@@ -117,13 +103,10 @@ class UserProfileModel {
       'subscriptionPlan': subscriptionPlan.value,
       'onboardingCompleted': onboardingCompleted,
       'acceptedTermsVersion': acceptedTermsVersion,
-
       'acceptedPrivacyVersion': acceptedPrivacyVersion,
-
       'termsAcceptedAt': termsAcceptedAt == null
           ? null
           : Timestamp.fromDate(termsAcceptedAt!),
-
       'privacyAcceptedAt': privacyAcceptedAt == null
           ? null
           : Timestamp.fromDate(privacyAcceptedAt!),
@@ -132,10 +115,6 @@ class UserProfileModel {
       'lastLoginAt': Timestamp.fromDate(lastLoginAt),
     };
   }
-
-  // ─────────────────────────────────────────────
-  // Copy
-  // ─────────────────────────────────────────────
 
   UserProfileModel copyWith({
     String? fullName,
@@ -169,10 +148,6 @@ class UserProfileModel {
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,
     );
   }
-
-  // ─────────────────────────────────────────────
-  // Convenience
-  // ─────────────────────────────────────────────
 
   bool get hasCareerStage => careerStage != null;
 

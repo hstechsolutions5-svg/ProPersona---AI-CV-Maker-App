@@ -3,220 +3,187 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ============================================================
-    // Authentication Helpers
-    // ============================================================
-
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function isSelf(userId) {
+    function isSelf(uid) {
       return isSignedIn()
-          && request.auth.uid == userId;
+          && request.auth.uid == uid;
     }
-
-    // ============================================================
-    // Ownership Helpers
-    // ============================================================
 
     function ownsExistingDocument() {
       return isSignedIn()
-          && resource.data.ownerId == request.auth.uid;
+          && resource.data.ownerId
+              == request.auth.uid;
     }
 
     function ownsIncomingDocument() {
       return isSignedIn()
-          && request.resource.data.ownerId == request.auth.uid;
+          && request.resource.data.ownerId
+              == request.auth.uid;
     }
 
-    // ============================================================
-    // Immutable / Protected Field Helpers
-    // ============================================================
-
-    function resumeProtectedFieldsUnchanged() {
-      return !request.resource.data
-          .diff(resource.data)
-          .affectedKeys()
-          .hasAny([
-            'id',
-            'ownerId',
-            'createdAt'
-          ]);
+    function hasCurrentLegalConsent() {
+      return request.resource.data
+              .acceptedTermsVersion
+              == '2026-09-30'
+          && request.resource.data
+              .acceptedPrivacyVersion
+              == '2026-09-30'
+          && request.resource.data
+              .termsAcceptedAt
+              is timestamp
+          && request.resource.data
+              .privacyAcceptedAt
+              is timestamp;
     }
 
-    function coverLetterProtectedFieldsUnchanged() {
-      return !request.resource.data
-          .diff(resource.data)
-          .affectedKeys()
-          .hasAny([
-            'id',
-            'ownerId',
-            'createdAt'
-          ]);
-    }
+    match /users/{uid} {
+      allow get:
+        if isSelf(uid);
 
-    function userProtectedFieldsUnchanged() {
-      return !request.resource.data
-          .diff(resource.data)
-          .affectedKeys()
-          .hasAny([
-            'uid',
-            'subscriptionPlan',
-            'createdAt'
-          ]);
-    }
+      allow list:
+        if false;
 
-    // ============================================================
-    // Users
-    // ============================================================
+      allow create:
+        if isSelf(uid)
+        && request.resource.data.uid
+            == uid
+        && request.resource.data
+            .subscriptionPlan
+            == 'free'
+        && request.resource.data
+            .onboardingCompleted
+            == false
+        && request.resource.data
+            .createdAt
+            is timestamp
+        && hasCurrentLegalConsent();
 
-    match /users/{userId} {
+      allow update:
+        if isSelf(uid)
+        && request.resource.data.uid
+            == resource.data.uid
+        && request.resource.data
+            .subscriptionPlan
+            == resource.data
+                .subscriptionPlan
+        && request.resource.data
+            .createdAt
+            == resource.data
+                .createdAt
+        && hasCurrentLegalConsent();
 
-      allow get: if isSelf(userId);
+      allow delete:
+        if false;
 
-      // Prevent profile enumeration.
-      allow list: if false;
-
-      allow create: if isSelf(userId)
-          && request.resource.data.keys().hasAll([
-            'uid',
-            'subscriptionPlan',
-            'onboardingCompleted',
-            'createdAt'
-          ])
-          && request.resource.data.uid == userId
-          && request.resource.data.subscriptionPlan == 'free'
-          && request.resource.data.onboardingCompleted == false;
-
-      allow update: if isSelf(userId)
-          && request.resource.data.uid == userId
-          && userProtectedFieldsUnchanged();
-
-      // Account deletion will eventually go through
-      // controlled application/backend logic.
-      allow delete: if false;
-
-      // ----------------------------------------------------------
-      // User Preferences
-      // ----------------------------------------------------------
-
-      match /preferences/{preferenceId} {
-        allow read, write: if isSelf(userId);
+      match /preferences/{document=**} {
+        allow read, write:
+          if isSelf(uid);
       }
 
-      // ----------------------------------------------------------
-      // User Activity
-      // ----------------------------------------------------------
+      match /activity/{document=**} {
+        allow read:
+          if isSelf(uid);
 
-      match /activity/{activityId} {
-        allow read: if isSelf(userId);
-
-        // Activity logs are server-authoritative.
-        allow create, update, delete: if false;
+        allow write:
+          if false;
       }
     }
-
-    // ============================================================
-    // Resumes
-    // ============================================================
 
     match /resumes/{resumeId} {
+      allow read:
+        if ownsExistingDocument();
 
-      allow read: if ownsExistingDocument();
+      allow create:
+        if ownsIncomingDocument()
+        && request.resource.data.id
+            == resumeId;
 
-      allow create: if ownsIncomingDocument()
-          && request.resource.data.id == resumeId;
+      allow update:
+        if ownsExistingDocument()
+        && ownsIncomingDocument()
+        && request.resource.data.id
+            == resource.data.id
+        && request.resource.data.ownerId
+            == resource.data.ownerId
+        && request.resource.data.createdAt
+            == resource.data.createdAt;
 
-      allow update: if ownsExistingDocument()
-          && ownsIncomingDocument()
-          && request.resource.data.id == resumeId
-          && resumeProtectedFieldsUnchanged();
-
-      allow delete: if ownsExistingDocument();
+      allow delete:
+        if ownsExistingDocument();
     }
-
-    // ============================================================
-    // Resume Versions
-    // ============================================================
 
     match /resume_versions/{versionId} {
+      allow read:
+        if ownsExistingDocument();
 
-      allow read: if ownsExistingDocument();
+      allow create:
+        if ownsIncomingDocument()
+        && request.resource.data.id
+            == versionId;
 
-      allow create: if ownsIncomingDocument()
-          && request.resource.data.id == versionId;
+      allow update:
+        if false;
 
-      // Historical resume snapshots must remain immutable.
-      allow update: if false;
-
-      allow delete: if ownsExistingDocument();
+      allow delete:
+        if ownsExistingDocument();
     }
-
-    // ============================================================
-    // ATS Analyses
-    // ============================================================
 
     match /ats_analyses/{analysisId} {
+      allow read:
+        if ownsExistingDocument();
 
-      allow read: if ownsExistingDocument();
+      allow create, update:
+        if false;
 
-      // ATS results must originate from the trusted backend.
-      allow create, update: if false;
-
-      allow delete: if ownsExistingDocument();
+      allow delete:
+        if ownsExistingDocument();
     }
 
-    // ============================================================
-    // Cover Letters
-    // ============================================================
+    match /cover_letters/{letterId} {
+      allow read:
+        if ownsExistingDocument();
 
-    match /cover_letters/{coverLetterId} {
+      allow create:
+        if ownsIncomingDocument()
+        && request.resource.data.id
+            == letterId;
 
-      allow read: if ownsExistingDocument();
+      allow update:
+        if ownsExistingDocument()
+        && ownsIncomingDocument()
+        && request.resource.data.id
+            == resource.data.id
+        && request.resource.data.ownerId
+            == resource.data.ownerId
+        && request.resource.data.createdAt
+            == resource.data.createdAt;
 
-      allow create: if ownsIncomingDocument()
-          && request.resource.data.id == coverLetterId;
-
-      allow update: if ownsExistingDocument()
-          && ownsIncomingDocument()
-          && request.resource.data.id == coverLetterId
-          && coverLetterProtectedFieldsUnchanged();
-
-      allow delete: if ownsExistingDocument();
+      allow delete:
+        if ownsExistingDocument();
     }
-
-    // ============================================================
-    // AI Generation Audit
-    // ============================================================
 
     match /ai_generations/{generationId} {
+      allow read:
+        if ownsExistingDocument();
 
-      allow read: if ownsExistingDocument();
-
-      // AI audit records are generated by backend infrastructure.
-      allow create, update, delete: if false;
+      allow write:
+        if false;
     }
 
-    // ============================================================
-    // Subscription / Entitlement State
-    // ============================================================
+    match /subscriptions/{uid} {
+      allow read:
+        if isSelf(uid);
 
-    match /subscriptions/{userId} {
-
-      allow read: if isSelf(userId);
-
-      // Plan, usage limits, billing status and entitlements
-      // must never be controlled by the Flutter client.
-      allow create, update, delete: if false;
+      allow write:
+        if false;
     }
-
-    // ============================================================
-    // Default Deny
-    // ============================================================
 
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write:
+        if false;
     }
   }
 }

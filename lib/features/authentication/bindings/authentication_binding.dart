@@ -11,62 +11,41 @@ import '../services/session_service.dart';
 class AuthenticationBinding extends Bindings {
   @override
   void dependencies() {
-    _registerAuthRepository();
-    _registerUserProfileRepository();
-    _registerSessionService();
-    _registerAuthController();
-  }
-
-  void _registerAuthRepository() {
-    if (Get.isRegistered<AuthRepository>()) {
-      return;
+    if (!Get.isRegistered<AuthRepository>()) {
+      Get.put<AuthRepository>(
+        FirebaseAuthenticationRepository(),
+        permanent: true,
+      );
     }
 
-    Get.put<AuthRepository>(
-      FirebaseAuthenticationRepository(),
-      permanent: true,
-    );
-  }
-
-  void _registerUserProfileRepository() {
-    if (Get.isRegistered<UserProfileRepository>()) {
-      return;
+    if (!Get.isRegistered<UserProfileRepository>()) {
+      Get.put<UserProfileRepository>(
+        FirebaseUserProfileRepository(),
+        permanent: true,
+      );
     }
 
-    Get.put<UserProfileRepository>(
-      FirebaseUserProfileRepository(),
-      permanent: true,
-    );
-  }
-
-  void _registerSessionService() {
-    if (Get.isRegistered<SessionService>()) {
-      return;
+    if (!Get.isRegistered<SessionService>()) {
+      Get.put<SessionService>(
+        SessionService(
+          authRepository: Get.find<AuthRepository>(),
+          userProfileRepository: Get.find<UserProfileRepository>(),
+          logger: Get.find<LoggerService>(),
+        ),
+        permanent: true,
+      );
     }
 
-    Get.put<SessionService>(
-      SessionService(
-        authRepository: Get.find<AuthRepository>(),
-        userProfileRepository: Get.find<UserProfileRepository>(),
-        logger: Get.find<LoggerService>(),
-      ),
-      permanent: true,
-    );
-  }
-
-  void _registerAuthController() {
-    if (Get.isRegistered<AuthController>()) {
-      return;
+    if (!Get.isRegistered<AuthController>()) {
+      Get.lazyPut<AuthController>(
+        () => AuthController(
+          authRepository: Get.find<AuthRepository>(),
+          userProfileRepository: Get.find<UserProfileRepository>(),
+          sessionService: Get.find<SessionService>(),
+          logger: Get.find<LoggerService>(),
+        ),
+        fenix: true,
+      );
     }
-
-    Get.lazyPut<AuthController>(
-      () => AuthController(
-        authRepository: Get.find<AuthRepository>(),
-        userProfileRepository: Get.find<UserProfileRepository>(),
-        sessionService: Get.find<SessionService>(),
-        logger: Get.find<LoggerService>(),
-      ),
-      fenix: true,
-    );
   }
 }

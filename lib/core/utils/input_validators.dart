@@ -1,9 +1,6 @@
 abstract final class InputValidators {
   static final RegExp _emailRegex = RegExp(
-    r'^[A-Za-z0-9.!#$%&'
-    '*+/=?^_`{|}~-]+@'
-    r'[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?'
-    r'(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$',
+    r"^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$",
   );
 
   static String? required(String? value, {String fieldName = 'This field'}) {
@@ -14,14 +11,24 @@ abstract final class InputValidators {
     return null;
   }
 
+  static String? fullName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Full name is required.';
+    }
+
+    if (value.trim().length < 2) {
+      return 'Please enter your full name.';
+    }
+
+    return null;
+  }
+
   static String? email(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Email address is required.';
     }
 
-    final normalized = value.trim();
-
-    if (!_emailRegex.hasMatch(normalized)) {
+    if (!_emailRegex.hasMatch(value.trim())) {
       return 'Please enter a valid email address.';
     }
 
@@ -31,20 +38,6 @@ abstract final class InputValidators {
   static String? password(String? value) {
     if (value == null || value.isEmpty) {
       return 'Password is required.';
-    }
-
-    return null;
-  }
-
-  static String? fullName(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Full name is required.';
-    }
-
-    final normalized = value.trim();
-
-    if (normalized.length < 2) {
-      return 'Please enter your full name.';
     }
 
     return null;

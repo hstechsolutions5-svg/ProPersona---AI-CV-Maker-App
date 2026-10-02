@@ -13,7 +13,7 @@ class LegalConsentView extends StatefulWidget {
 }
 
 class _LegalConsentViewState extends State<LegalConsentView> {
-  late final AuthController _authController;
+  late final AuthController _controller;
 
   bool _accepted = false;
 
@@ -21,7 +21,7 @@ class _LegalConsentViewState extends State<LegalConsentView> {
   void initState() {
     super.initState();
 
-    _authController = Get.find<AuthController>();
+    _controller = Get.find<AuthController>();
   }
 
   Future<void> _continue() async {
@@ -29,42 +29,26 @@ class _LegalConsentViewState extends State<LegalConsentView> {
       return;
     }
 
-    final success = await _authController.acceptCurrentLegalDocuments();
+    final success = await _controller.acceptCurrentLegalDocuments();
 
     if (!mounted) {
       return;
     }
 
-    if (!success) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(
-              _authController.failure?.message ?? 'Consent could not be saved.',
-            ),
-          ),
-        );
+    if (success) {
+      Get.offAllNamed(AppRoutes.splash);
 
       return;
     }
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('Your preferences have been updated.')),
-      );
-
-    // Phase 1.14 handles the next destination.
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Terms & Privacy')),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.xl),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 620),
             child: Column(
@@ -74,19 +58,14 @@ class _LegalConsentViewState extends State<LegalConsentView> {
                   'Review and continue',
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
-
-                const SizedBox(height: AppSpacing.md),
-
+                const SizedBox(height: AppSpacing.lg),
                 const Text(
-                  'Before continuing with ProPersona, please review and accept the current Terms & Conditions and Privacy Policy.',
+                  'Please review and accept the current Terms & Conditions and Privacy Policy before continuing.',
                 ),
-
-                const SizedBox(height: AppSpacing.xxl),
-
+                const SizedBox(height: AppSpacing.xl),
                 CheckboxListTile(
                   value: _accepted,
                   contentPadding: EdgeInsets.zero,
-                  controlAffinity: ListTileControlAffinity.leading,
                   onChanged: (value) {
                     setState(() {
                       _accepted = value ?? false;
@@ -96,9 +75,7 @@ class _LegalConsentViewState extends State<LegalConsentView> {
                     'I accept the current Terms & Conditions and Privacy Policy.',
                   ),
                 ),
-
                 Wrap(
-                  spacing: AppSpacing.xm,
                   children: [
                     TextButton(
                       onPressed: () {
@@ -114,22 +91,17 @@ class _LegalConsentViewState extends State<LegalConsentView> {
                     ),
                   ],
                 ),
-
-                const SizedBox(height: AppSpacing.xxl),
-
+                const SizedBox(height: AppSpacing.xl),
                 Obx(
                   () => FilledButton(
-                    onPressed: !_accepted || _authController.isLoading
+                    onPressed: !_accepted || _controller.isLoading
                         ? null
                         : _continue,
-                    child: _authController.isAcceptingLegalConsent
+                    child: _controller.isAcceptingLegalConsent
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Text('Accept & Continue'),
                   ),

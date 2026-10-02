@@ -15,21 +15,7 @@ class AuthUserModel {
 
   final bool emailVerified;
 
-  bool get hasDisplayName {
-    return displayName != null && displayName!.trim().isNotEmpty;
-  }
+  bool get hasDisplayName => displayName?.trim().isNotEmpty ?? false;
 
-  bool get hasPhoto {
-    return photoUrl != null && photoUrl!.trim().isNotEmpty;
-  }
-
-  @override
-  String toString() {
-    return 'AuthUserModel('
-        'uid: $uid, '
-        'email: $email, '
-        'displayName: $displayName, '
-        'emailVerified: $emailVerified'
-        ')';
-  }
+  bool get hasPhoto => photoUrl?.trim().isNotEmpty ?? false;
 }

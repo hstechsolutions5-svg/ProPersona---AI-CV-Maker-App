@@ -38,29 +38,23 @@ class SessionState {
   final SessionStatus status;
 
   final AuthUserModel? authUser;
-
   final UserProfileModel? profile;
-
   final AppFailure? failure;
 
-  // ─────────────────────────────────────────────
-  // Session Status
-  // ─────────────────────────────────────────────
+  bool get isInitializing => status == SessionStatus.initializing;
 
-  bool get isInitializing {
-    return status == SessionStatus.initializing;
-  }
+  bool get isUnauthenticated => status == SessionStatus.unauthenticated;
 
-  bool get isUnauthenticated {
-    return status == SessionStatus.unauthenticated;
-  }
+  bool get isAuthenticated => status == SessionStatus.authenticated;
 
-  bool get isAuthenticated {
-    return status == SessionStatus.authenticated;
-  }
+  bool get hasError => status == SessionStatus.error;
 
-  bool get hasError {
-    return status == SessionStatus.error;
+  String? get uid => authUser?.uid;
+
+  bool get hasProfile => profile != null;
+
+  bool get requiresProfileCreation {
+    return isAuthenticated && authUser != null && profile == null;
   }
 
   bool get needsLegalConsent {
@@ -68,34 +62,6 @@ class SessionState {
         profile != null &&
         !profile!.hasAcceptedCurrentLegal;
   }
-
-  // ─────────────────────────────────────────────
-  // Authentication
-  // ─────────────────────────────────────────────
-
-  bool get hasAuthenticatedUser {
-    return authUser != null;
-  }
-
-  String? get uid {
-    return authUser?.uid;
-  }
-
-  // ─────────────────────────────────────────────
-  // Profile
-  // ─────────────────────────────────────────────
-
-  bool get hasProfile {
-    return profile != null;
-  }
-
-  bool get requiresProfileCreation {
-    return isAuthenticated && authUser != null && profile == null;
-  }
-
-  // ─────────────────────────────────────────────
-  // Onboarding
-  // ─────────────────────────────────────────────
 
   bool get needsOnboarding {
     return isAuthenticated &&
@@ -108,24 +74,10 @@ class SessionState {
     return isAuthenticated && profile?.onboardingCompleted == true;
   }
 
-  // ─────────────────────────────────────────────
-  // Application Access
-  // ─────────────────────────────────────────────
-
   bool get canEnterApplication {
     return isAuthenticated &&
         profile != null &&
         profile!.hasAcceptedCurrentLegal &&
         profile!.onboardingCompleted;
-  }
-
-  @override
-  String toString() {
-    return 'SessionState('
-        'status: $status, '
-        'uid: ${authUser?.uid}, '
-        'hasProfile: $hasProfile, '
-        'onboardingCompleted: $onboardingCompleted'
-        ')';
   }
 }

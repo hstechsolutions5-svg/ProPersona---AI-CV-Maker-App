@@ -1,12 +1,16 @@
 import 'package:get/get.dart';
 import 'package:pro_persona/features/authentication/views/forget_password_view.dart';
 import 'package:pro_persona/features/authentication/views/signup_view.dart';
+import 'package:pro_persona/features/authentication/views/splash_view.dart';
 import 'package:pro_persona/features/legal/widgets/privacy_policy_view.dart';
 import 'package:pro_persona/features/legal/widgets/terms_and_conditions_view.dart';
+import 'package:pro_persona/features/onboarding/bindings/onboarding_binding.dart';
+import 'package:pro_persona/features/onboarding/views/path_selector_view.dart';
 import '../../core/widgets/route_placeholder_view.dart';
-import '../../features/legal/views/legal_view.dart';
+import '../../features/legal/views/legal_consent_view.dart';
 import 'app_routes.dart';
 import 'middleware/auth_middleware.dart';
+import 'middleware/guest_middleware.dart';
 import 'middleware/onboarding_middleware.dart';
 import '../../features/authentication/views/login_view.dart';
 
@@ -22,26 +26,22 @@ abstract final class AppPages {
 
   static final List<GetPage<dynamic>> pages = [
     // ─────────────────────────────────────
-    // Bootstrap
-    // ─────────────────────────────────────
-    GetPage(
-      name: AppRoutes.splash,
-      page: () => const RoutePlaceholderView(
-        title: 'ProPersona',
-        subtitle: 'ATS Friendly CV Maker',
-      ),
-    ),
-
-    // ─────────────────────────────────────
     // Authentication
     // ─────────────────────────────────────
+    GetPage(name: AppRoutes.splash, page: () => const SplashView()),
+
     GetPage(name: AppRoutes.login, page: () => const LoginView()),
 
-    GetPage(name: AppRoutes.signup, page: () => const SignupView()),
+    GetPage(
+      name: AppRoutes.signup,
+      page: () => const SignupView(),
+      middlewares: [GuestMiddleware()],
+    ),
 
     GetPage(
       name: AppRoutes.forgotPassword,
       page: () => const ForgotPasswordView(),
+      middlewares: [GuestMiddleware()],
     ),
 
     // ─────────────────────────────────────
@@ -49,8 +49,9 @@ abstract final class AppPages {
     // ─────────────────────────────────────
     GetPage(
       name: AppRoutes.pathSelector,
-      page: () => const RoutePlaceholderView(title: 'Choose Your Career Path'),
-      middlewares: authenticatedMiddlewares,
+      page: () => const PathSelectorView(),
+      binding: OnboardingBinding(),
+      middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
     // ─────────────────────────────────────
@@ -59,7 +60,7 @@ abstract final class AppPages {
     GetPage(
       name: AppRoutes.dashboard,
       page: () => const RoutePlaceholderView(title: 'Dashboard'),
-      middlewares: protectedMiddlewares,
+      middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
     // ─────────────────────────────────────
@@ -150,7 +151,14 @@ abstract final class AppPages {
       page: () => const TermsAndConditionsView(),
     ),
 
-    GetPage(name: AppRoutes.legalConsent, page: () => const LegalConsentView()),
+    // ──────────────────────────────
+    // Authenticated legal consent
+    // ──────────────────────────────
+    GetPage(
+      name: AppRoutes.legalConsent,
+      page: () => const LegalConsentView(),
+      middlewares: [AuthMiddleware(), OnboardingMiddleware()],
+    ),
 
     // ─────────────────────────────────────
     // Fallback
