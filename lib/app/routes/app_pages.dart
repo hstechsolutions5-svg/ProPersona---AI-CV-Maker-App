@@ -7,7 +7,11 @@ import 'package:pro_persona/features/legal/widgets/terms_and_conditions_view.dar
 import 'package:pro_persona/features/onboarding/bindings/onboarding_binding.dart';
 import 'package:pro_persona/features/onboarding/views/path_selector_view.dart';
 import '../../core/widgets/route_placeholder_view.dart';
+import '../../features/dashboard/bindings/dashboard_binding.dart';
+import '../../features/dashboard/views/dashboard_view.dart';
 import '../../features/legal/views/legal_consent_view.dart';
+import '../../features/resumes/bindings/resumes_binding.dart';
+import '../../features/resumes/views/resumes_view.dart';
 import '../../shared/widgets/navigation/app_shell_placeholder_view.dart';
 import 'app_routes.dart';
 import 'middleware/auth_middleware.dart';
@@ -60,11 +64,8 @@ abstract final class AppPages {
     // ─────────────────────────────────────
     GetPage(
       name: AppRoutes.dashboard,
-      page: () => const AppShellPlaceholderView(
-        title: 'Dashboard',
-        route: AppRoutes.dashboard,
-        description: 'Your ProPersona career workspace will appear here.',
-      ),
+      page: () => const DashboardView(),
+      binding: DashboardBinding(),
       middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
@@ -73,11 +74,8 @@ abstract final class AppPages {
     // ─────────────────────────────────────
     GetPage(
       name: AppRoutes.resumes,
-      page: () => const AppShellPlaceholderView(
-        title: 'My Resumes',
-        route: AppRoutes.resumes,
-        description: 'Create, manage and improve your resumes.',
-      ),
+      page: () => const MyResumesView(),
+      binding: ResumeBinding(),
       middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
@@ -87,6 +85,7 @@ abstract final class AppPages {
         title: 'Create Resume',
         route: AppRoutes.createResume,
       ),
+      binding: ResumeBinding(),
       middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
@@ -96,6 +95,7 @@ abstract final class AppPages {
         title: 'Resume Builder',
         route: AppRoutes.editResume,
       ),
+      binding: ResumeBinding(),
       middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
@@ -105,6 +105,7 @@ abstract final class AppPages {
         title: 'Resume Preview',
         route: AppRoutes.resumePreview,
       ),
+      binding: ResumeBinding(),
       middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
