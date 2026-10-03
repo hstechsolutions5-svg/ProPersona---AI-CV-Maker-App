@@ -41,11 +41,11 @@ abstract final class AppRoutes {
 
   static const String notFound = '/not-found';
 
-  static String editResumePath(String id) {
-    return '/resumes/$id/edit';
+  static String editResumePath(String resumeId) {
+    return '/resumes/$resumeId/edit';
   }
 
-  static String resumePreviewPath(String id) {
-    return '/resumes/$id/preview';
+  static String resumePreviewPath(String resumeId) {
+    return '/resumes/$resumeId/preview';
   }
 }

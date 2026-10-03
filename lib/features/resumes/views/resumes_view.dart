@@ -285,7 +285,11 @@ class _ResumeGrid extends StatelessWidget {
             crossAxisCount: columns,
             crossAxisSpacing: spacing,
             mainAxisSpacing: spacing,
-            mainAxisExtent: deviceType == DeviceType.mobile ? 410 : 430,
+            mainAxisExtent: switch (deviceType) {
+              DeviceType.mobile => 460,
+              DeviceType.tablet => 450,
+              DeviceType.desktop => 450,
+            },
           ),
           itemBuilder: (context, index) {
             final resume = resumes[index];

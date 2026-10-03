@@ -10,7 +10,12 @@ import '../../core/widgets/route_placeholder_view.dart';
 import '../../features/dashboard/bindings/dashboard_binding.dart';
 import '../../features/dashboard/views/dashboard_view.dart';
 import '../../features/legal/views/legal_consent_view.dart';
+import '../../features/resume_builder/bindings/resume_builder_binding.dart';
+import '../../features/resume_builder/views/resume_builder_view.dart';
+import '../../features/resume_preview/bindings/resume_preview_binding.dart';
+import '../../features/resume_preview/views/resume_preview_view.dart';
 import '../../features/resumes/bindings/resumes_binding.dart';
+import '../../features/resumes/views/create_resume_view.dart';
 import '../../features/resumes/views/resumes_view.dart';
 import '../../shared/widgets/navigation/app_shell_placeholder_view.dart';
 import 'app_routes.dart';
@@ -81,32 +86,29 @@ abstract final class AppPages {
 
     GetPage(
       name: AppRoutes.createResume,
-      page: () => const AppShellPlaceholderView(
-        title: 'Create Resume',
-        route: AppRoutes.createResume,
-      ),
+      page: () => const CreateResumeView(),
       binding: ResumeBinding(),
       middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
     GetPage(
       name: AppRoutes.editResume,
-      page: () => const AppShellPlaceholderView(
-        title: 'Resume Builder',
-        route: AppRoutes.editResume,
-      ),
-      binding: ResumeBinding(),
+      page: () => const ResumeBuilderView(),
+      binding: ResumeBuilderBinding(),
       middlewares: [AuthMiddleware(), OnboardingMiddleware()],
     ),
 
     GetPage(
-      name: AppRoutes.resumePreview,
-      page: () => const AppShellPlaceholderView(
-        title: 'Resume Preview',
-        route: AppRoutes.resumePreview,
-      ),
-      binding: ResumeBinding(),
-      middlewares: [AuthMiddleware(), OnboardingMiddleware()],
+      name:
+      AppRoutes.resumePreview,
+      page: () =>
+      const ResumePreviewView(),
+      binding:
+      ResumePreviewBinding(),
+      middlewares: [
+        AuthMiddleware(),
+        OnboardingMiddleware(),
+      ],
     ),
 
     // ─────────────────────────────────────

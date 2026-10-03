@@ -49,6 +49,17 @@ class ResumeController extends GetxController {
 
   AppFailure? get failure => _failure.value;
 
+  String get profileFullName => _sessionService.profile?.fullName ?? '';
+
+  String get profileEmail => _sessionService.profile?.email ?? '';
+
+  String get careerStageLabel {
+    return switch (_sessionService.profile?.careerStage) {
+      null => 'Not selected',
+      final stage => stage.label,
+    };
+  }
+
   bool get hasLoadedResumes => _hasLoadedResumes.value;
 
   int get resumeCount => _resumes.length;

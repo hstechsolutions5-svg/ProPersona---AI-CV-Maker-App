@@ -45,9 +45,9 @@ class ResumeCard extends StatelessWidget {
 
                 const SizedBox(height: AppSpacing.xl),
 
-                _buildPreview(context),
+                Expanded(child: _buildPreview(context)),
 
-                const SizedBox(height: AppSpacing.xl),
+                const SizedBox(height: AppSpacing.lg),
 
                 Text(
                   resume.title,
@@ -87,8 +87,6 @@ class ResumeCard extends StatelessWidget {
                     ),
                   ],
                 ),
-
-                const Spacer(),
 
                 const SizedBox(height: AppSpacing.lg),
 
@@ -169,74 +167,68 @@ class ResumeCard extends StatelessWidget {
   Widget _buildPreview(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    return AspectRatio(
-      aspectRatio: 1.65,
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: scheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: scheme.outlineVariant),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _PreviewLine(
-                    widthFactor: 0.62,
-                    strong: true,
-                    color: scheme.primary,
-                  ),
-                  const SizedBox(height: 8),
-                  _PreviewLine(
-                    widthFactor: 0.85,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(height: 6),
-                  _PreviewLine(
-                    widthFactor: 0.72,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(height: 14),
-                  _PreviewLine(
-                    widthFactor: 0.40,
-                    strong: true,
-                    color: scheme.primary,
-                  ),
-                  const SizedBox(height: 7),
-                  _PreviewLine(
-                    widthFactor: 0.92,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(height: 5),
-                  _PreviewLine(
-                    widthFactor: 0.78,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ],
-              ),
-            ),
+    return Container(
+      width: double.infinity,
+      constraints: const BoxConstraints(minHeight: 100),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _PreviewLine(
+                  widthFactor: 0.62,
+                  strong: true,
+                  color: scheme.primary,
+                ),
 
-            const SizedBox(width: AppSpacing.md),
+                const SizedBox(height: 8),
 
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: scheme.primary.withValues(alpha: 0.10),
-              ),
-              child: Icon(
-                Icons.person_outline,
-                size: 20,
-                color: scheme.primary,
-              ),
+                _PreviewLine(widthFactor: 0.85, color: scheme.onSurfaceVariant),
+
+                const SizedBox(height: 6),
+
+                _PreviewLine(widthFactor: 0.72, color: scheme.onSurfaceVariant),
+
+                const SizedBox(height: 14),
+
+                _PreviewLine(
+                  widthFactor: 0.40,
+                  strong: true,
+                  color: scheme.primary,
+                ),
+
+                const SizedBox(height: 7),
+
+                _PreviewLine(widthFactor: 0.92, color: scheme.onSurfaceVariant),
+
+                const SizedBox(height: 5),
+
+                _PreviewLine(widthFactor: 0.78, color: scheme.onSurfaceVariant),
+              ],
             ),
-          ],
-        ),
+          ),
+
+          const SizedBox(width: AppSpacing.md),
+
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: scheme.primary.withValues(alpha: 0.10),
+            ),
+            child: Icon(Icons.person_outline, size: 20, color: scheme.primary),
+          ),
+        ],
       ),
     );
   }
